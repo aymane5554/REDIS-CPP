@@ -49,12 +49,9 @@ int Server::Wal(std::vector <str> &cmd)
         data += "$" + std::to_string(cmd[i].size()) + "\r\n";
         data += cmd[i] + "\r\n";
     }
-    int fd = open(config.wal_file.c_str(), O_CREAT | O_APPEND | O_WRONLY, 0777);
-    if (fd == -1)
+    if (wal_fd == -1)
         return -1;
-    write(fd, data.c_str(), data.size());
-    fdatasync(fd);
-    close(fd);
+    write(wal_fd, data.c_str(), data.size());
     return 0;
 }
 
@@ -121,7 +118,8 @@ void Server::read_wal()
     int lines = 0;
     int bytes = -1;
     size_t offset = 0;
-    int fd = open(config.wal_file.c_str(), O_RDONLY);
+    wal_fd = open(config.wal_file.c_str(), O_CREAT | O_APPEND | O_RDWR, 0777);
+    int fd = wal_fd;
     str str_buff;
     char buff[BUF_SIZE];
 

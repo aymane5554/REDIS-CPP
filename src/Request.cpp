@@ -65,20 +65,22 @@ void make_client_writable(int fd,  int epoll_fd)
 
 void Server::parse_request(int fd)
 {
-    char buff[BUF_SIZE];
     ssize_t len;
     Client &client = clients[fd];
+    size_t old_size = client.req_buff.size();
 
-    len = recv(fd, buff, BUF_SIZE, MSG_NOSIGNAL);
+    client.req_buff.resize(old_size + BUF_SIZE);
+    len = recv(fd, &client.req_buff[old_size], BUF_SIZE, MSG_NOSIGNAL);
     if (len == -1)
     {
+        client.req_buff.resize(old_size);
         if (errno != EAGAIN && errno != EWOULDBLOCK)
             safe_close(fd);
         return;
     }
     if (len == 0)
         return safe_close(fd);
-    client.req_buff.append(buff, len);
+    client.req_buff.resize(old_size + len);
     if (client.req_buff.find("\r\n") == str::npos)
         return;
     lines(client.req_buff, client.cmd, client.lines, client.bytes);

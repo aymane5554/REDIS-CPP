@@ -118,6 +118,7 @@ class Server
     std::mutex mtx;
     int server_fd;
     int epoll_fd;
+    int wal_fd;
     long long last_serialization;
     public:
         void run();

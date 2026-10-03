@@ -166,6 +166,7 @@ void Server::run()
             }
             last_serialization = std::time(NULL);
         }
+        fsync(wal_fd);
     }
     if (serializer_pid != -1)
         waitpid(serializer_pid, NULL, 0);
@@ -220,5 +221,6 @@ Server::Server(const RuntimeConfig &cfg): config(cfg)
 
 Server::~Server()
 {
+    close(wal_fd);
     std::cout << "Shutting down KV cache server" << std::endl;
 }
