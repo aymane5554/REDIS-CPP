@@ -43,23 +43,17 @@ bool Server::exec_wal(std::vector <str> &cmd)
 
 int Server::Wal(std::vector <str> &cmd)
 {
-    str lines;
-    str keys;
+    str data = "*" + std::to_string(cmd.size()) + "\r\n";
+    for (size_t i = 0; i < cmd.size(); i++)
+    {
+        data += "$" + std::to_string(cmd[i].size()) + "\r\n";
+        data += cmd[i] + "\r\n";
+    }
     int fd = open(config.wal_file.c_str(), O_CREAT | O_APPEND | O_WRONLY, 0777);
     if (fd == -1)
         return -1;
-    lines = "*" + std::to_string(cmd.size());
-    write(fd, lines.c_str(), lines.size());
-    write(fd, "\r\n", 2);
-    for (size_t i = 0; i < cmd.size(); i++)
-    {
-        keys = "$" + std::to_string(cmd[i].size());
-        write(fd, keys.c_str(), keys.size());
-        write(fd, "\r\n", 2);
-        write(fd, cmd[i].c_str(), cmd[i].length());
-        write(fd, "\r\n", 2);
-    }
-    fsync(fd);
+    write(fd, data.c_str(), data.size());
+    fdatasync(fd);
     close(fd);
     return 0;
 }

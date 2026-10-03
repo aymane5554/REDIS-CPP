@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <netinet/tcp.h>
 
 const char bad_alloc_res[55] = "-ERR memory limit reached, please resend the request\r\n";
 
@@ -73,6 +74,8 @@ void Server::run()
                         perror("accept failed");
                         continue;
                     }
+                    int no_delay = 1;
+                    setsockopt(conn_fd, IPPROTO_TCP, TCP_NODELAY, &no_delay, sizeof(no_delay));
                     struct   epoll_event client_event;
                     set_nonblocking(conn_fd);
                     client_event.data.fd = conn_fd;
